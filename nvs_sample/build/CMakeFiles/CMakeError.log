@@ -1,0 +1,9 @@
+Detecting CXX compiler ABI info failed to compile with the following output:
+Change Dir: E:/git_store/esp32_szp/nvs_sample/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):E:/esp_idf/.espressif/tools/ninja/1.11.1/ninja.exe cmTC_58f1c && ninja: error: loading 'build.ninja': 绯荤粺鎵句笉鍒版寚瀹氱殑鏂囦欢銆?
+
+
+
+
+

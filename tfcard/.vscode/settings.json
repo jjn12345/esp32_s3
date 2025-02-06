@@ -1,15 +1,4 @@
 {
-  "C_Cpp.intelliSenseEngine": "default",
-  "files.associations": {
-    "esp_log.h": "c",
-    "esp_vfs_fat.h": "c",
-    "esp_err.h": "c",
-    "sdmmc_host.h": "c",
-    "sdmmc_cmd.h": "c"
-  },
-  "idf.openOcdConfigs": [
-    "board/esp32s3-bridge.cfg"
-  ],
-  "idf.portWin": "COM5",
-  "idf.flashType": "UART"
+    "idf.portWin": "COM5",
+    "idf.flashType": "UART"
 }

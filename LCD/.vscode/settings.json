@@ -1,34 +1,5 @@
 {
-    "idf.openOcdConfigs": [
-        "board/esp32s3-bridge.cfg"
-    ],
-    "files.associations": {
-        "esp_check.h": "c",
-        "esp_lcd_panel_vendor.h": "c",
-        "esp_system.h": "c",
-        "esp_mac.h": "c",
-        "gpio.h": "c",
-        "gpio_types.h": "c",
-        "esp_bit_defs.h": "c",
-        "gpio_num.h": "c",
-        "soc_caps.h": "c",
-        "esp_rom_gpio.h": "c",
-        "gpio_etm.h": "c",
-        "esp_intr_alloc.h": "c",
-        "esp_err.h": "c",
-        "esp_log.h": "c",
-        "mypca9557.h": "c",
-        "esp_compiler.h": "c",
-        "lcd.h": "c",
-        "string.h": "c",
-        "ledc.h": "c",
-        "chrono": "c",
-        "random": "c",
-        "limits": "c",
-        "semaphore": "c",
-        "compare": "c",
-        "cstdint": "c"
-    },
-    "idf.portWin": "COM5",
-    "idf.flashType": "UART"
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.flashType": "UART",
+  "idf.portWin": "COM5"
 }

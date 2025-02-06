@@ -1,11 +1,5 @@
 {
-    "files.associations": {
-        "stdio.h": "c",
-        "random": "cpp"
-    },
-    "idf.portWin": "COM5",
-    "idf.openOcdConfigs": [
-        "board/esp32s3-bridge.cfg"
-    ],
-    "idf.flashType": "UART"
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.portWin": "COM5",
+  "idf.flashType": "UART"
 }

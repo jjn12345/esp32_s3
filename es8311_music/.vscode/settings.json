@@ -1,27 +1,5 @@
 {
-    "idf.openOcdConfigs": [
-        "board/esp32s3-bridge.cfg"
-    ],
-    "idf.portWin": "COM5",
-    "idf.flashType": "UART",
-    "files.associations": {
-        "mypca9557.h": "c",
-        "esp_err.h": "c",
-        "esp_log.h": "c",
-        "esp_check.h": "c",
-        "es8311_reg.h": "c",
-        "es8311.h": "c",
-        "sdkconfig.h": "c",
-        "array": "c",
-        "string": "c",
-        "string_view": "c",
-        "span": "c",
-        "esp_types.h": "c",
-        "i2c.h": "c",
-        "gpio.h": "c",
-        "esp_rom_sys.h": "c",
-        "*.tcc": "c",
-        "format": "c",
-        "i2s.h": "c"
-    }
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.portWin": "COM5",
+  "idf.flashType": "UART"
 }

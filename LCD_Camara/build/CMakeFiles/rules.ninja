@@ -1505,7 +1505,7 @@ rule C_STATIC_LIBRARY_LINKER____idf_main_
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = E:\esp_idf\.espressif\tools\cmake\3.24.0\bin\cmake.exe --regenerate-during-build -SE:\ESP32_jlc\03-esp32_mypro\LCD_Camara -BE:\ESP32_jlc\03-esp32_mypro\LCD_Camara\build
+  command = E:\esp_idf\.espressif\tools\cmake\3.24.0\bin\cmake.exe --regenerate-during-build -SE:\git_store\esp32_szp\LCD_Camara -BE:\git_store\esp32_szp\LCD_Camara\build
   description = Re-running CMake...
   generator = 1
 

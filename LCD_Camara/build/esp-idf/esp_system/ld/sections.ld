@@ -1,6 +1,6 @@
 /* Automatically generated file; DO NOT EDIT */
 /* Espressif IoT Development Framework Linker Script */
-/* Generated from: E:\ESP32_jlc\03-esp32_mypro\LCD_Camara\build\esp-idf\esp_system\ld\sections.ld.in */
+/* Generated from: E:\git_store\esp32_szp\LCD_Camara\build\esp-idf\esp_system\ld\sections.ld.in */
 
 /*
 

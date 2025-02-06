@@ -39,6 +39,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("E:/ESP32_jlc/03-esp32_mypro/es8311_music/build/esp-idf/esp_system/port/soc/esp32s3/cmake_install.cmake")
+  include("E:/git_store/esp32_szp/es8311_music/build/esp-idf/esp_system/port/soc/esp32s3/cmake_install.cmake")
 endif()
 

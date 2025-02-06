@@ -1,4 +1,4 @@
-# Install script for directory: E:/ESP32_jlc/03-esp32_mypro/tfcard/main
+# Install script for directory: E:/git_store/esp32_szp/tfcard/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

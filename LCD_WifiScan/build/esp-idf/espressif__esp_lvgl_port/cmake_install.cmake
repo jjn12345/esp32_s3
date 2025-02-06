@@ -1,8 +1,8 @@
-# Install script for directory: E:/ESP32_jlc/03-esp32_mypro/LCD_WifiScan/managed_components/espressif__esp_lvgl_port
+# Install script for directory: E:/git_store/esp32_szp/LCD_WifiScan/managed_components/espressif__esp_lvgl_port
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/lcd_lvgl")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/lcd_wifiscan")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

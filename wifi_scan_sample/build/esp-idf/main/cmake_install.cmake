@@ -1,4 +1,4 @@
-# Install script for directory: E:/ESP32_jlc/03-esp32_mypro/wifi_scan_sample/main
+# Install script for directory: E:/git_store/esp32_szp/wifi_scan_sample/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

@@ -1,0 +1,30 @@
+CMake Error:
+  Running
+
+   'E:/esp_idf/.espressif/tools/ninja/1.11.1/ninja.exe' '-C' 'E:/git_store/esp32_szp/nvs_sample/build/CMakeFiles/CMakeTmp' '-t' 'recompact'
+
+  failed with:
+
+   ninja: error: failed recompaction: Permission denied
+
+
+
+CMake Error:
+  Running
+
+   'E:/esp_idf/.espressif/tools/ninja/1.11.1/ninja.exe' '-C' 'E:/git_store/esp32_szp/nvs_sample/build/CMakeFiles/CMakeTmp' '-t' 'restat' 'build.ninja'
+
+  failed with:
+
+   ninja: error: failed recompaction: Permission denied
+
+
+
+CMake Error at E:/esp_idf/.espressif/tools/cmake/3.24.0/share/cmake-3.24/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile):
+  Failed to generate test project build system.
+Call Stack (most recent call first):
+  E:/esp_idf/.espressif/tools/cmake/3.24.0/share/cmake-3.24/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)
+  E:/esp_idf/v5.2.3/esp-idf/tools/cmake/project.cmake:506 (__project)
+  CMakeLists.txt:8 (project)
+
+

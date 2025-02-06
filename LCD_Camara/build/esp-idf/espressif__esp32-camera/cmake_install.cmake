@@ -1,4 +1,4 @@
-# Install script for directory: E:/ESP32_jlc/03-esp32_mypro/LCD_Camara/managed_components/espressif__esp32-camera
+# Install script for directory: E:/git_store/esp32_szp/LCD_Camara/managed_components/espressif__esp32-camera
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

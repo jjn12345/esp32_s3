@@ -1,4 +1,4 @@
-# Install script for directory: E:/ESP32_jlc/03-esp32_mypro/es8311_music/managed_components/espressif__es8311
+# Install script for directory: E:/git_store/esp32_szp/es8311_music/managed_components/espressif__es8311
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

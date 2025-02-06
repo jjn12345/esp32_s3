@@ -1,0 +1,23 @@
+CMake Error:
+  Running
+
+   'E:/esp_idf/.espressif/tools/ninja/1.11.1/ninja.exe' '-C' 'E:/git_store/esp32_szp/nvs_sample/build' '-t' 'recompact'
+
+  failed with:
+
+   ninja: error: failed recompaction: Permission denied
+
+
+
+CMake Error:
+  Running
+
+   'E:/esp_idf/.espressif/tools/ninja/1.11.1/ninja.exe' '-C' 'E:/git_store/esp32_szp/nvs_sample/build' '-t' 'restat' 'build.ninja'
+
+  failed with:
+
+   ninja: error: failed recompaction: Permission denied
+
+
+
+CMake Generate step failed.  Build files cannot be regenerated correctly.

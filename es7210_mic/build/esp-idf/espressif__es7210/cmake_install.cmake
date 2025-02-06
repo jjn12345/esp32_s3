@@ -1,4 +1,4 @@
-# Install script for directory: E:/ESP32_jlc/03-esp32_mypro/es7210_mic/managed_components/espressif__es7210
+# Install script for directory: E:/git_store/esp32_szp/es7210_mic/managed_components/espressif__es7210
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

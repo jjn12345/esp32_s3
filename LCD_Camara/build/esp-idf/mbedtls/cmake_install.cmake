@@ -39,6 +39,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("E:/ESP32_jlc/03-esp32_mypro/LCD_Camara/build/esp-idf/mbedtls/mbedtls/cmake_install.cmake")
+  include("E:/git_store/esp32_szp/LCD_Camara/build/esp-idf/mbedtls/mbedtls/cmake_install.cmake")
 endif()
 

@@ -1,4 +1,4 @@
-# Install script for directory: E:/ESP32_jlc/03-esp32_mypro/LCD_Camara
+# Install script for directory: E:/git_store/esp32_szp/LCD_Camara
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("E:/ESP32_jlc/03-esp32_mypro/LCD_Camara/build/esp-idf/cmake_install.cmake")
+  include("E:/git_store/esp32_szp/LCD_Camara/build/esp-idf/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "E:/ESP32_jlc/03-esp32_mypro/LCD_Camara/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "E:/git_store/esp32_szp/LCD_Camara/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

@@ -1,24 +1,9 @@
 {
-    "idf.openOcdConfigs": [
-        "board/esp32s3-bridge.cfg"
-    ],
-    "files.associations": {
-        "lcd.h": "c",
-        "esp_err.h": "c",
-        "gpio.h": "c",
-        "esp_lcd_panel_vendor.h": "c",
-        "esp_lcd_panel_io.h": "c",
-        "*.tcc": "c",
-        "spi_master.h": "c",
-        "string.h": "c",
-        "esp_lcd_panel_ops.h": "c",
-        "task.h": "c",
-        "pca9557.h": "c",
-        "esp_check.h": "c",
-        "esp_camera.h": "c",
-        "cam_hal.h": "c",
-        "esp_compiler.h": "c"
-    },
-    "idf.portWin": "COM5",
-    "idf.flashType": "UART"
+  "C_Cpp.intelliSenseEngine": "default",
+  "files.associations": {
+    "compare": "c",
+    "cstdint": "c"
+  },
+  "idf.portWin": "COM5",
+  "idf.flashType": "UART"
 }
