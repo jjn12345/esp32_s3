@@ -1,0 +1,39 @@
+{
+    "idf.openOcdConfigs": [
+        "board/esp32s3-bridge.cfg"
+    ],
+    "files.associations": {
+        "lcd.h": "c",
+        "esp_err.h": "c",
+        "gpio.h": "c",
+        "esp_lcd_panel_vendor.h": "c",
+        "esp_lcd_panel_io.h": "c",
+        "*.tcc": "c",
+        "spi_master.h": "c",
+        "string.h": "c",
+        "esp_lcd_panel_ops.h": "c",
+        "task.h": "c",
+        "pca9557.h": "c",
+        "esp_check.h": "c",
+        "esp_camera.h": "c",
+        "cam_hal.h": "c",
+        "esp_compiler.h": "c",
+        "stdio.h": "c",
+        "llx.h": "c",
+        "esp32_excute.h": "c",
+        "freertos.h": "c",
+        "queue.h": "c",
+        "esp_lcd_touch.h": "c",
+        "sccb.h": "c",
+        "i2c_master.h": "c",
+        "i2c_types.h": "c",
+        "cstdlib": "c",
+        "cstdint": "c",
+        "esp_lcd_touch_ft5x06.h": "c",
+        "lv_demos.h": "c",
+        "lv_demo_stress.h": "c",
+        "lv_demo_widgets.h": "c"
+    },
+    "idf.portWin": "COM5",
+    "idf.flashType": "UART"
+}

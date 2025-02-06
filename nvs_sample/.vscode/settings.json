@@ -1,0 +1,23 @@
+{
+    "files.associations": {
+        "stdio.h": "c",
+        "esp_err.h": "c",
+        "stdint.h": "c",
+        "array": "c",
+        "deque": "c",
+        "list": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "string_view": "c",
+        "format": "c",
+        "initializer_list": "c",
+        "span": "c",
+        "regex": "c"
+    },
+    "idf.openOcdConfigs": [
+        "board/esp32s3-bridge.cfg"
+    ],
+    "idf.portWin": "COM5",
+    "idf.flashType": "UART"
+}
