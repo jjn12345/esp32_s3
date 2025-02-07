@@ -13,10 +13,10 @@ void app_main(void)
     if(ESP_OK != ret){
         ESP_LOGE("app_main","app init failed");
     }
-    // lv_demo_benchmark(); 
+     lv_demo_benchmark(); 
     // lv_demo_keypad_encoder(); 
     // lv_demo_music(); 
     // lv_demo_stress(); 
-    lv_demo_widgets();
+    //lv_demo_widgets();
 
 }
