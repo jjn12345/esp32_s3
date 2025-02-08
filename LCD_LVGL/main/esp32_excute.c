@@ -145,11 +145,16 @@ static void lvgl_start(void){
     /* 将屏幕添加到lvgl接口中 */
     io_handle = lcd_get_io_handle();
     panel_handle = lcd_get_panel_handle();
+    err = esp_lcd_panel_draw_bitmap(*panel_handle,0,0,LCD_W,LCD_H,llx);
+    if(ESP_OK != err){
+        ESP_LOGE(Tag,"LVGL init fail");
+        return;
+    }
     const lvgl_port_display_cfg_t disp_cfg = {
         .io_handle = *io_handle,            /* lcd的io执行对象 */
         .panel_handle = *panel_handle,  /* lcd的控制平台执行对象 */
         .buffer_size = LV_BUFF_SIZE,    /* 绘制缓冲区的大小 */
-        .double_buffer = true,  /* 是否双缓冲 */
+        .double_buffer = false,  /* 是否双缓冲 */
         .hres = LV_LCD_H,       /* 显示器的水平分辨率 */
         .vres = LV_LCD_V,       /* 显示器的垂直分辨率 */
         .monochrome = false,    /* 是否单色显示器 */
@@ -254,7 +259,6 @@ esp_err_t app_init(void){
     
     /* lcd init */
     ret = lcd_init(cs_ctrl);
-    lcd_draw(0,0,LCD_W,LCD_H,(uint16_t*)llx);
     ESP_RETURN_ON_ERROR(ret,Tag,"bsp lcd init failed");
     /* camera init */
     // pca9557_gpio_write(pca,CAMERA_PWDN,pca_gpio_low);

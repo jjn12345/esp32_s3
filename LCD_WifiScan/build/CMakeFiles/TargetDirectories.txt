@@ -675,7 +675,7 @@ E:/git_store/esp32_szp/LCD_WifiScan/build/esp-idf/lvgl__lvgl/CMakeFiles/list_ins
 E:/git_store/esp32_szp/LCD_WifiScan/build/esp-idf/lvgl__lvgl/CMakeFiles/install.dir
 E:/git_store/esp32_szp/LCD_WifiScan/build/esp-idf/lvgl__lvgl/CMakeFiles/install/local.dir
 E:/git_store/esp32_szp/LCD_WifiScan/build/esp-idf/lvgl__lvgl/CMakeFiles/install/strip.dir
-E:/git_store/esp32_szp/LCD_WifiScan/build/esp-idf/espressif__esp_lvgl_port/CMakeFiles/__idf_espressif__esp_lvgl_port.dir
+E:/git_store/esp32_szp/LCD_WifiScan/build/esp-idf/espressif__esp_lvgl_port/CMakeFiles/lvgl_port_lib.dir
 E:/git_store/esp32_szp/LCD_WifiScan/build/esp-idf/espressif__esp_lvgl_port/CMakeFiles/edit_cache.dir
 E:/git_store/esp32_szp/LCD_WifiScan/build/esp-idf/espressif__esp_lvgl_port/CMakeFiles/rebuild_cache.dir
 E:/git_store/esp32_szp/LCD_WifiScan/build/esp-idf/espressif__esp_lvgl_port/CMakeFiles/list_install_components.dir

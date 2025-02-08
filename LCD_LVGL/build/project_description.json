@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "lcd_lvgl",
-    "project_version":    "204d29b-dirty",
+    "project_version":    "766c38e-dirty",
     "project_path":       "E:/git_store/esp32_szp/LCD_LVGL",
     "idf_path":           "E:/esp_idf/v5.2.3/esp-idf",
     "build_dir":          "E:/git_store/esp32_szp/LCD_LVGL/build",

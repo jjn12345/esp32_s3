@@ -262,7 +262,7 @@ void lcd_draw(int x_s,int y_s,int x_e,int y_e,uint16_t * FrameBuffer){
     // memcpy(tmp_buffer,FrameBuffer,buffer_size);
     // esp_lcd_panel_draw_bitmap(lcd_panel_t,x_s,y_s,x_e,y_e,tmp_buffer);
     // heap_caps_free(tmp_buffer);
-     esp_lcd_panel_draw_bitmap(lcd_panel_t,x_s,y_s,x_e,y_e,FrameBuffer);
+      esp_lcd_panel_draw_bitmap(lcd_panel_t,x_s,y_s,x_e,y_e,FrameBuffer);
 }
 /* LCD  set color */
 void lcd_set_color(uint16_t color){
@@ -314,11 +314,11 @@ esp_err_t lcd_init(
         ret = lcd_bsp_tp_init(tp_bsp_protocl);
         ESP_RETURN_ON_ERROR(ret,Tag,"lcd tp init failed");
     #endif
+    /* lcd set color */
+    lcd_set_color(0xffff);
     /* lcd display on */ 
     ret = esp_lcd_panel_disp_on_off(lcd_panel_t,1);
     ESP_RETURN_ON_ERROR(ret,Tag,"lcd disp failed");
-    /* lcd set color */
-    lcd_set_color(0xffff);
     /* lcd blk on */
     lcd_on();
     return ESP_OK;

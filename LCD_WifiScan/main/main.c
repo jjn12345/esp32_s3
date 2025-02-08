@@ -4,7 +4,8 @@
 #include "esp_check.h"
 #include "esp32_excute.h"
 #include "demos/lv_demos.h"
-
+#include "string.h"
+#include "esp32_ui.h"
 
 void app_main(void)
 {
@@ -13,10 +14,7 @@ void app_main(void)
     if(ESP_OK != ret){
         ESP_LOGE("app_main","app init failed");
     }
-     lv_demo_benchmark(); 
-    // lv_demo_keypad_encoder(); 
-    // lv_demo_music(); 
-    // lv_demo_stress(); 
-    //lv_demo_widgets();
-
+    lv_demo_stress();
+    lvgl_ui();
+    vTaskDelete(NULL);
 }
