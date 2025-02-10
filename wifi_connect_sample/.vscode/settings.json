@@ -1,0 +1,13 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.portWin": "COM5",
+  "idf.flashType": "UART",
+  "idf.openOcdConfigs": [
+    "board/esp32s3-bridge.cfg"
+  ],
+  "files.associations": {
+    "cstdlib": "c",
+    "compare": "c",
+    "cstdint": "c"
+  }
+}

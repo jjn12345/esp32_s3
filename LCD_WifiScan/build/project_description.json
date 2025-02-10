@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "lcd_wifiscan",
-    "project_version":    "766c38e-dirty",
+    "project_version":    "1b9af61-dirty",
     "project_path":       "E:/git_store/esp32_szp/LCD_WifiScan",
     "idf_path":           "E:/esp_idf/v5.2.3/esp-idf",
     "build_dir":          "E:/git_store/esp32_szp/LCD_WifiScan/build",
@@ -880,7 +880,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [ "espressif__esp32-camera", "espressif__esp_lcd_touch_ft5x06", "espressif__esp_lvgl_port", "lvgl__lvgl" ],
             "file": "E:/git_store/esp32_szp/LCD_WifiScan/build/esp-idf/main/libmain.a",
-            "sources": [ "E:/git_store/esp32_szp/LCD_WifiScan/main/esp32_ui.c", "E:/git_store/esp32_szp/LCD_WifiScan/main/esp32_excute.c", "E:/git_store/esp32_szp/LCD_WifiScan/main/pca9557.c", "E:/git_store/esp32_szp/LCD_WifiScan/main/lcd.c", "E:/git_store/esp32_szp/LCD_WifiScan/main/main.c" ],
+            "sources": [ "E:/git_store/esp32_szp/LCD_WifiScan/main/mem_manage.c", "E:/git_store/esp32_szp/LCD_WifiScan/main/link_list.c", "E:/git_store/esp32_szp/LCD_WifiScan/main/esp32_ui.c", "E:/git_store/esp32_szp/LCD_WifiScan/main/esp32_excute.c", "E:/git_store/esp32_szp/LCD_WifiScan/main/pca9557.c", "E:/git_store/esp32_szp/LCD_WifiScan/main/lcd.c", "E:/git_store/esp32_szp/LCD_WifiScan/main/main.c" ],
             "include_dirs": [ "." ]
         },
         "mbedtls": {

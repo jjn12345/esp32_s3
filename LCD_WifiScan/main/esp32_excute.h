@@ -9,4 +9,6 @@
 
 
 esp_err_t app_init(void);
-
+void my_wifi_init(void);
+void my_wifi_deinit(void);
+void lvgl_start(void);

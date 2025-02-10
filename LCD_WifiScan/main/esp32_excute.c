@@ -9,14 +9,17 @@
 #include "lvgl.h"
 #include "llx.h"
 #include "nvs_flash.h"
-
+#include "demos/lv_demos.h"
 #define USER_CONFIG_CAMERA  0
 
 #define LCD_FRAME_LEN   CAMERA_FRAME_BUFFER_COUNT
 static QueueHandle_t xQueueLcdFrame = NULL; /* 摄像头 <--> LCD */
 
-#define WIFI_START          BIT0
-#define WIFI_SCAN_DONE      BIT1
+#define WIFI_START              BIT0
+#define WIFI_SCAN_DONE          BIT1
+#define WIFI_CONNECTED          BIT2
+#define WIFI_DISCONNECTED       BIT3
+#define WIFI_EVT_CODE           (WIFI_START|WIFI_SCAN_DONE|WIFI_CONNECTED|WIFI_DISCONNECTED)    
 static EventGroupHandle_t xWifiEventGroup = NULL;   /* wifi 事件标志组 */
 
 static wifi_ap_record_t * scan_ap = NULL;   /* 指向扫描到的ap信息,以便后续连接或保存 */
@@ -146,14 +149,14 @@ static lv_indev_t* touch_handle;
 static esp_lcd_panel_io_handle_t *io_handle = NULL;
 static esp_lcd_panel_handle_t *panel_handle = NULL;
 static esp_lcd_touch_handle_t *tp = NULL;
-static void lvgl_start(void){
+void lvgl_start(void){
     /* lvgl 接口配置 */
     const lvgl_port_cfg_t lvgl_cfg = {
         .task_affinity = 1,
         .task_max_sleep_ms = 500,
-        .task_priority = 1,
-        .task_stack = 1024 * 10,
-        .timer_period_ms = 2,
+        .task_priority = 4,
+        .task_stack = 1024 * 6,
+        .timer_period_ms = 5,
     };
     
     esp_err_t err = lvgl_port_init(&lvgl_cfg);
@@ -204,17 +207,21 @@ static void lvgl_start(void){
 static esp_netif_t * wifi_netif_handle = NULL;
 static esp_err_t wifi_sta_config(void){
     esp_err_t ret = ESP_OK;
-    ret = esp_netif_init();
-    ESP_RETURN_ON_ERROR(ret,"wifi","netif init failed");
-    ret = esp_event_loop_create_default();
-    ESP_RETURN_ON_ERROR(ret,"wifi","event loop create failed");
-    wifi_netif_handle = esp_netif_create_default_wifi_sta();
-    assert(wifi_netif_handle);
+    static bool is_config = 0;
+    if(!is_config){
+        ret = esp_netif_init();
+        ESP_RETURN_ON_ERROR(ret,"wifi","netif init failed");
+        ret = esp_event_loop_create_default();
+        ESP_RETURN_ON_ERROR(ret,"wifi","event loop create failed");
+        wifi_netif_handle = esp_netif_create_default_wifi_sta();
+        assert(wifi_netif_handle);
+    }
     wifi_init_config_t wifi_init_cfg = WIFI_INIT_CONFIG_DEFAULT();
     ret = esp_wifi_init(&wifi_init_cfg); 
     ESP_RETURN_ON_ERROR(ret,"wifi","wifi init failed");
     ret = esp_wifi_set_mode(WIFI_MODE_STA);
     ESP_RETURN_ON_ERROR(ret,"wifi","wifi set mode failed");
+    if(!is_config)is_config = true;
     return ESP_OK;
 }
 static void  run_to_wifi_event(void* event_handler_arg,
@@ -231,6 +238,13 @@ static void  run_to_wifi_event(void* event_handler_arg,
             xEventGroupSetBits(xWifiEventGroup,WIFI_SCAN_DONE);
         }
         break;
+        case WIFI_EVENT_STA_CONNECTED:{
+            xEventGroupSetBits(xWifiEventGroup,WIFI_CONNECTED);
+        }
+        break;
+        case WIFI_EVENT_STA_DISCONNECTED:{
+            xEventGroupSetBits(xWifiEventGroup,WIFI_DISCONNECTED);
+        }
     }
 }
 static esp_err_t wifi_scan(void){
@@ -253,11 +267,17 @@ static void wifi_scan_finish_cb(void){
     esp_err_t ret = ESP_OK;
     uint16_t get_ap_nums = 0;
     ret = esp_wifi_scan_get_ap_num(&ap_nums);
-    ESP_ERROR_CHECK(ret);
+    if(ESP_OK != ret){
+        ESP_LOGE(Tag,"wifi scan fail code: %s",esp_err_to_name(ret));
+        return;
+    }
     ESP_LOGI("wifi-scan","ap_nums:%d",ap_nums);
     scan_ap = malloc(sizeof(wifi_ap_record_t)*ap_nums);
     ret = esp_wifi_scan_get_ap_records(&ap_nums,scan_ap);
-    ESP_ERROR_CHECK(ret);
+    if(ESP_OK != ret){
+        ESP_LOGE(Tag,"wifi scan fail code: %s",esp_err_to_name(ret));
+        return;
+    }
     printf("%30s %s %s %s\n","SSID","频道","强度","MAC地址");
     for(int i = 0;i < ap_nums;i++){
         printf("%30s %3d %3d %02X-%02X-%02X-%02X-%02X-%02X\n",scan_ap->ssid,scan_ap->primary,\
@@ -268,6 +288,20 @@ static void wifi_scan_finish_cb(void){
     fflush(stdout);
 }
 
+void my_wifi_init(void){
+    esp_err_t ret = ESP_OK;
+    ret = wifi_sta_config();
+    ESP_ERROR_CHECK(ret);
+    /*  注册事件环的回调,用于消息传递  */
+    ret = esp_event_handler_register(WIFI_EVENT,ESP_EVENT_ANY_ID,run_to_wifi_event,NULL);
+    ESP_ERROR_CHECK(ret);
+    ESP_ERROR_CHECK(esp_wifi_start());
+}
+void my_wifi_deinit(void){
+    ESP_ERROR_CHECK(esp_wifi_disconnect());
+    ESP_ERROR_CHECK(esp_wifi_stop());
+    ESP_ERROR_CHECK(esp_wifi_deinit());
+}
 /* App Task defined */
 /* start task defined */
 #define TASK_START_NAME             "start"
@@ -292,7 +326,7 @@ static void task_process_camera(void * arg);
 
 /* wifi task defined */
 #define TASK_WIFI_NAME               "wifi"
-#define TASK_WIFI_STACK_DEPTH        (4*1024)
+#define TASK_WIFI_STACK_DEPTH        (6*1024)
 #define TASK_WIFI_PRIORITY           (1)
 static TaskHandle_t   task_wifi = 0;
 static void task_process_wifi(void * arg);
@@ -348,25 +382,20 @@ static void task_process_lcd(void * arg){
 }
 
 static void task_process_wifi(void * arg){
-    esp_err_t ret = ESP_OK;
     EventBits_t wifi_mask = 0;
-    /*  注册事件环的回调,用于消息传递  */
-    ret = esp_event_handler_register(WIFI_EVENT,ESP_EVENT_ANY_ID,run_to_wifi_event,NULL);
-    ESP_ERROR_CHECK(ret);
     xWifiEventGroup = xEventGroupCreate();  /* 创建事件标志组，用于后续执行wifi相关任务 */
     assert(xWifiEventGroup);
-    ret = esp_wifi_start(); /* wifi驱动任务开始 */
-    ESP_ERROR_CHECK(ret);
     while(1){
-        wifi_mask = xEventGroupWaitBits(xWifiEventGroup,WIFI_START|WIFI_SCAN_DONE,pdTRUE,pdFALSE,portMAX_DELAY);
-        if(wifi_mask & WIFI_START){
-            ret = wifi_scan();
-            if(ESP_OK != ret){
-                ESP_LOGE(Tag,"wifi scan failed");
+        wifi_mask = xEventGroupWaitBits(xWifiEventGroup,WIFI_EVT_CODE,pdTRUE,pdFALSE,portMAX_DELAY);
+        switch(wifi_mask & WIFI_EVT_CODE){
+            case WIFI_START:{
+                wifi_scan();
             }
-        }
-        if(wifi_mask & WIFI_SCAN_DONE){
-            wifi_scan_finish_cb();
+            break;
+            case WIFI_SCAN_DONE:{
+                wifi_scan_finish_cb();
+            }
+            break;
         }
     }
 }
@@ -396,11 +425,6 @@ esp_err_t app_init(void){
     ret = bsp_camera_init();
     ESP_RETURN_ON_ERROR(ret,Tag,"bsp camera init failed");
     #endif     
-    /* lvgl start */
-    lvgl_start();
-    /* wifi init */
-    ret = wifi_sta_config();
-    ESP_RETURN_ON_ERROR(ret,Tag,"bsp wifi init failed"); 
     /* app start task create */
     ret = xTaskCreate(task_process_start,TASK_START_NAME,TASK_START_STACK_DEPTH,NULL,TASK_START_PRIORITY,&task_start);
      if(pdPASS != ret){
