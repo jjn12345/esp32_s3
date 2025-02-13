@@ -2,8 +2,8 @@
 #include "driver/i2c.h"
 #include "driver/spi_master.h"
 #include "esp_wifi.h"
-#include "lcd.h"
 #include "pca9557.h"
+#include "lcd.h"
 #include "esp_camera.h"
 #include "esp_lvgl_port.h"
 #include "lvgl.h"
@@ -14,16 +14,6 @@
 
 #define LCD_FRAME_LEN   CAMERA_FRAME_BUFFER_COUNT
 static QueueHandle_t xQueueLcdFrame = NULL; /* 摄像头 <--> LCD */
-
-#define WIFI_START              BIT0
-#define WIFI_SCAN_DONE          BIT1
-#define WIFI_CONNECTED          BIT2
-#define WIFI_DISCONNECTED       BIT3
-#define WIFI_EVT_CODE           (WIFI_START|WIFI_SCAN_DONE|WIFI_CONNECTED|WIFI_DISCONNECTED)    
-static EventGroupHandle_t xWifiEventGroup = NULL;   /* wifi 事件标志组 */
-
-static wifi_ap_record_t * scan_ap = NULL;   /* 指向扫描到的ap信息,以便后续连接或保存 */
-static uint16_t ap_nums = 0;    /* 周围ap的个数 */
 static pca9557_handle_t pca;
 
 static char Tag[]   = "lcd_lvgl";
@@ -62,7 +52,7 @@ static esp_err_t bsp_spi_init(void){
         .mosi_io_num = SPI_MOSI,
         .miso_io_num = -1,
         .sclk_io_num = SPI_CLK,
-        .max_transfer_sz = SPI_MAX_TRAN_SIZE,
+        .max_transfer_sz = 4096,        /* 开启DMA最大可以传输4096Byte不开最大64Bytes */
         .quadhd_io_num = -1,
         .quadwp_io_num = -1,
     };
@@ -143,13 +133,13 @@ static esp_err_t bsp_camera_init(void){
 /* lvgl */
 #define LV_LCD_H        LCD_W
 #define LV_LCD_V        LCD_H
-#define LV_BUFF_SIZE    LV_LCD_H * 20 * sizeof(lv_color_t)
+#define LV_BUFF_SIZE    LV_LCD_H * 10 * sizeof(lv_color_t)
 static lv_disp_t * disp_handle;
 static lv_indev_t* touch_handle;
 static esp_lcd_panel_io_handle_t *io_handle = NULL;
 static esp_lcd_panel_handle_t *panel_handle = NULL;
 static esp_lcd_touch_handle_t *tp = NULL;
-void lvgl_start(void){
+static void lvgl_start(void){
     /* lvgl 接口配置 */
     const lvgl_port_cfg_t lvgl_cfg = {
         .task_affinity = 1,
@@ -171,7 +161,7 @@ void lvgl_start(void){
         .io_handle = *io_handle,            /* lcd的io执行对象 */
         .panel_handle = *panel_handle,  /* lcd的控制平台执行对象 */
         .buffer_size = LV_BUFF_SIZE,    /* 绘制缓冲区的大小 */
-        .double_buffer = true,  /* 是否双缓冲 */
+        .double_buffer = false,  /* 是否双缓冲 */
         .hres = LV_LCD_H,       /* 显示器的水平分辨率 */
         .vres = LV_LCD_V,       /* 显示器的垂直分辨率 */
         .monochrome = false,    /* 是否单色显示器 */
@@ -203,202 +193,9 @@ void lvgl_start(void){
     assert(touch_handle);
 }
 
-/* wifi */
-static esp_netif_t * wifi_netif_handle = NULL;
-static esp_err_t wifi_sta_config(void){
-    esp_err_t ret = ESP_OK;
-    static bool is_config = 0;
-    if(!is_config){
-        ret = esp_netif_init();
-        ESP_RETURN_ON_ERROR(ret,"wifi","netif init failed");
-        ret = esp_event_loop_create_default();
-        ESP_RETURN_ON_ERROR(ret,"wifi","event loop create failed");
-        wifi_netif_handle = esp_netif_create_default_wifi_sta();
-        assert(wifi_netif_handle);
-    }
-    wifi_init_config_t wifi_init_cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ret = esp_wifi_init(&wifi_init_cfg); 
-    ESP_RETURN_ON_ERROR(ret,"wifi","wifi init failed");
-    ret = esp_wifi_set_mode(WIFI_MODE_STA);
-    ESP_RETURN_ON_ERROR(ret,"wifi","wifi set mode failed");
-    if(!is_config)is_config = true;
-    return ESP_OK;
-}
-static void  run_to_wifi_event(void* event_handler_arg,
-                                esp_event_base_t event_base,
-                                int32_t event_id,
-                                void* event_data)
-{
-    switch(event_id){
-        case WIFI_EVENT_STA_START:{
-            xEventGroupSetBits(xWifiEventGroup,WIFI_START);
-        }
-        break;
-        case WIFI_EVENT_SCAN_DONE:{
-            xEventGroupSetBits(xWifiEventGroup,WIFI_SCAN_DONE);
-        }
-        break;
-        case WIFI_EVENT_STA_CONNECTED:{
-            xEventGroupSetBits(xWifiEventGroup,WIFI_CONNECTED);
-        }
-        break;
-        case WIFI_EVENT_STA_DISCONNECTED:{
-            xEventGroupSetBits(xWifiEventGroup,WIFI_DISCONNECTED);
-        }
-    }
-}
-static esp_err_t wifi_scan(void){
-    esp_err_t ret;
-    wifi_country_t wifi_country = {
-        .cc = "CN",
-        .nchan = 13,
-        .schan = 0,
-        .policy = WIFI_COUNTRY_POLICY_AUTO,
-    };
-    ret = esp_wifi_set_country(&wifi_country);
 
-    wifi_scan_config_t wifi_scan_cfg = {
-        .scan_type = WIFI_SCAN_TYPE_ACTIVE,
-    };
-    ret = esp_wifi_scan_start(&wifi_scan_cfg,false);
-    return ret;
-}
-static void wifi_scan_finish_cb(void){
-    esp_err_t ret = ESP_OK;
-    uint16_t get_ap_nums = 0;
-    ret = esp_wifi_scan_get_ap_num(&ap_nums);
-    if(ESP_OK != ret){
-        ESP_LOGE(Tag,"wifi scan fail code: %s",esp_err_to_name(ret));
-        return;
-    }
-    ESP_LOGI("wifi-scan","ap_nums:%d",ap_nums);
-    scan_ap = malloc(sizeof(wifi_ap_record_t)*ap_nums);
-    ret = esp_wifi_scan_get_ap_records(&ap_nums,scan_ap);
-    if(ESP_OK != ret){
-        ESP_LOGE(Tag,"wifi scan fail code: %s",esp_err_to_name(ret));
-        return;
-    }
-    printf("%30s %s %s %s\n","SSID","频道","强度","MAC地址");
-    for(int i = 0;i < ap_nums;i++){
-        printf("%30s %3d %3d %02X-%02X-%02X-%02X-%02X-%02X\n",scan_ap->ssid,scan_ap->primary,\
-        scan_ap->rssi,scan_ap->bssid[0],scan_ap->bssid[1],scan_ap->bssid[2],scan_ap->bssid[3],\
-        scan_ap->bssid[4],scan_ap->bssid[5]);
-        scan_ap++;
-    }    
-    fflush(stdout);
-}
 
-void my_wifi_init(void){
-    esp_err_t ret = ESP_OK;
-    ret = wifi_sta_config();
-    ESP_ERROR_CHECK(ret);
-    /*  注册事件环的回调,用于消息传递  */
-    ret = esp_event_handler_register(WIFI_EVENT,ESP_EVENT_ANY_ID,run_to_wifi_event,NULL);
-    ESP_ERROR_CHECK(ret);
-    ESP_ERROR_CHECK(esp_wifi_start());
-}
-void my_wifi_deinit(void){
-    ESP_ERROR_CHECK(esp_wifi_disconnect());
-    ESP_ERROR_CHECK(esp_wifi_stop());
-    ESP_ERROR_CHECK(esp_wifi_deinit());
-}
-/* App Task defined */
-/* start task defined */
-#define TASK_START_NAME             "start"
-#define TASK_START_STACK_DEPTH      (4*1024)
-#define TASK_START_PRIORITY         (10)
-static TaskHandle_t    task_start = 0;
-static void task_process_start(void * arg);
 
-/* LCD task defined */
-#define TASK_LCD_NAME               "lcd"
-#define TASK_LCD_STACK_DEPTH        (4*1024)
-#define TASK_LCD_PRIORITY           (1)
-static TaskHandle_t    task_lcd = 0;
-static void task_process_lcd(void * arg);
-
-/* camera task defined */
-#define TASK_CAMERA_NAME               "camera"
-#define TASK_CAMERA_STACK_DEPTH        (4*1024)
-#define TASK_CAMERA_PRIORITY           (1)
-static TaskHandle_t   task_camera = 0;
-static void task_process_camera(void * arg);
-
-/* wifi task defined */
-#define TASK_WIFI_NAME               "wifi"
-#define TASK_WIFI_STACK_DEPTH        (6*1024)
-#define TASK_WIFI_PRIORITY           (1)
-static TaskHandle_t   task_wifi = 0;
-static void task_process_wifi(void * arg);
-
-/* app task  */
-static void task_process_start(void * arg){
-    BaseType_t  ret = pdPASS;
-    /* app task init */
-    xQueueLcdFrame = xQueueCreate(LCD_FRAME_LEN,sizeof(camera_fb_t));
-    if(NULL == xQueueLcdFrame){
-        ESP_LOGE(Tag,"app queue created failed");
-    }
-    ret = xTaskCreatePinnedToCore(task_process_wifi,TASK_WIFI_NAME,TASK_WIFI_STACK_DEPTH,NULL,TASK_WIFI_PRIORITY,&task_wifi,0);
-    if(pdPASS != ret){
-        ESP_LOGE(Tag,"task wifi created failed");
-        vTaskDelete(NULL);
-        return;
-    }    
-    // ret = xTaskCreatePinnedToCore(task_process_lcd,TASK_LCD_NAME,TASK_LCD_STACK_DEPTH,NULL,TASK_LCD_PRIORITY,&task_lcd,0);
-    // if(pdPASS != ret){
-    //     ESP_LOGE(Tag,"task lcd created failed");
-    //     vTaskDelete(NULL);
-    //     return;
-    // }
-    // ret = xTaskCreatePinnedToCore(task_process_camera,TASK_CAMERA_NAME,TASK_CAMERA_STACK_DEPTH,NULL,TASK_CAMERA_PRIORITY,&task_camera,1);
-    // if(pdPASS != ret){
-    //     ESP_LOGE(Tag,"task camera created failed");
-    //     vTaskDelete(NULL);
-    //     return;
-    // }
-    vTaskDelete(NULL);
-}
-static void task_process_camera(void * arg){
-    camera_fb_t * frame = NULL;
-    for(;;){
-
-        frame = esp_camera_fb_get();
-        if (!frame) {
-            ESP_LOGE(Tag, "Frame buffer could not be acquired");
-            return;
-        }
-        xQueueSend(xQueueLcdFrame,&frame,portMAX_DELAY);
-    }
-}
-static void task_process_lcd(void * arg){
-    camera_fb_t * frame = NULL;
-    for(;;){
-        if(xQueueReceive(xQueueLcdFrame,&frame,portMAX_DELAY)){
-            lcd_draw(0,0,frame->width,frame->height,(uint16_t*)frame->buf);
-            esp_camera_fb_return(frame);
-        }
-    }
-}
-
-static void task_process_wifi(void * arg){
-    EventBits_t wifi_mask = 0;
-    xWifiEventGroup = xEventGroupCreate();  /* 创建事件标志组，用于后续执行wifi相关任务 */
-    assert(xWifiEventGroup);
-    while(1){
-        wifi_mask = xEventGroupWaitBits(xWifiEventGroup,WIFI_EVT_CODE,pdTRUE,pdFALSE,portMAX_DELAY);
-        switch(wifi_mask & WIFI_EVT_CODE){
-            case WIFI_START:{
-                wifi_scan();
-            }
-            break;
-            case WIFI_SCAN_DONE:{
-                wifi_scan_finish_cb();
-            }
-            break;
-        }
-    }
-}
 
 
 esp_err_t app_init(void){   
@@ -425,12 +222,7 @@ esp_err_t app_init(void){
     ret = bsp_camera_init();
     ESP_RETURN_ON_ERROR(ret,Tag,"bsp camera init failed");
     #endif     
-    /* app start task create */
-    ret = xTaskCreate(task_process_start,TASK_START_NAME,TASK_START_STACK_DEPTH,NULL,TASK_START_PRIORITY,&task_start);
-     if(pdPASS != ret){
-        ESP_LOGE(Tag,"app task created failed");
-        return ESP_FAIL;
-    }
+    lvgl_start();
     return ESP_OK;
 }
 
