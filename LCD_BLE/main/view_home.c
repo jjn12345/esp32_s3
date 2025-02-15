@@ -28,9 +28,9 @@ void view_home_create(event_bus_t* bus){
     UI_UNLOCK();
 }   
 void view_home_hide(void){
-    UI_LOCK();
-    lv_obj_set_hidden(g_home_screen,true);
-    UI_UNLOCK();
+    // UI_LOCK();
+    // lv_obj_set_hidden(g_home_screen,true);
+    // UI_UNLOCK();
 }
 void view_home_show(void){
     // 无需销毁，保持常驻

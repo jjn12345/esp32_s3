@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "lcd_wifiscan",
-    "project_version":    "74855b6-dirty",
+    "project_version":    "fe816d1-dirty",
     "project_path":       "E:/git_store/esp32_szp/LCD_WifiScan",
     "idf_path":           "E:/esp_idf/v5.2.3/esp-idf",
     "build_dir":          "E:/git_store/esp32_szp/LCD_WifiScan/build",

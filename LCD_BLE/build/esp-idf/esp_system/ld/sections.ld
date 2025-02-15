@@ -1,6 +1,6 @@
 /* Automatically generated file; DO NOT EDIT */
 /* Espressif IoT Development Framework Linker Script */
-/* Generated from: E:\git_store\esp32_szp\LCD_WifiScan\build\esp-idf\esp_system\ld\sections.ld.in */
+/* Generated from: E:\git_store\esp32_szp\LCD_BLE\build\esp-idf\esp_system\ld\sections.ld.in */
 
 /*
 

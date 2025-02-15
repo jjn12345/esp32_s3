@@ -1,8 +1,8 @@
-# Install script for directory: E:/git_store/esp32_szp/LCD_WifiScan/managed_components/espressif__esp_lcd_touch_ft5x06
+# Install script for directory: E:/git_store/esp32_szp/LCD_BLE/managed_components/espressif__esp_lcd_touch_ft5x06
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/lcd_wifiscan")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/lcd_ble")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

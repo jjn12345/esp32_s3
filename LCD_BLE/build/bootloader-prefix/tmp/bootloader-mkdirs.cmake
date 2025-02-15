@@ -5,18 +5,18 @@ cmake_minimum_required(VERSION 3.5)
 
 file(MAKE_DIRECTORY
   "E:/esp_idf/v5.2.3/esp-idf/components/bootloader/subproject"
-  "E:/git_store/esp32_szp/LCD_WifiScan/build/bootloader"
-  "E:/git_store/esp32_szp/LCD_WifiScan/build/bootloader-prefix"
-  "E:/git_store/esp32_szp/LCD_WifiScan/build/bootloader-prefix/tmp"
-  "E:/git_store/esp32_szp/LCD_WifiScan/build/bootloader-prefix/src/bootloader-stamp"
-  "E:/git_store/esp32_szp/LCD_WifiScan/build/bootloader-prefix/src"
-  "E:/git_store/esp32_szp/LCD_WifiScan/build/bootloader-prefix/src/bootloader-stamp"
+  "E:/git_store/esp32_szp/LCD_BLE/build/bootloader"
+  "E:/git_store/esp32_szp/LCD_BLE/build/bootloader-prefix"
+  "E:/git_store/esp32_szp/LCD_BLE/build/bootloader-prefix/tmp"
+  "E:/git_store/esp32_szp/LCD_BLE/build/bootloader-prefix/src/bootloader-stamp"
+  "E:/git_store/esp32_szp/LCD_BLE/build/bootloader-prefix/src"
+  "E:/git_store/esp32_szp/LCD_BLE/build/bootloader-prefix/src/bootloader-stamp"
 )
 
 set(configSubDirs )
 foreach(subDir IN LISTS configSubDirs)
-    file(MAKE_DIRECTORY "E:/git_store/esp32_szp/LCD_WifiScan/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
+    file(MAKE_DIRECTORY "E:/git_store/esp32_szp/LCD_BLE/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
 endforeach()
 if(cfgdir)
-  file(MAKE_DIRECTORY "E:/git_store/esp32_szp/LCD_WifiScan/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
+  file(MAKE_DIRECTORY "E:/git_store/esp32_szp/LCD_BLE/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
 endif()

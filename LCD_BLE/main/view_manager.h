@@ -6,7 +6,7 @@
 LV_FONT_DECLARE(lv_font_chinese)    /* 声明中文字库 */
 #define UI_LOCK()       lvgl_port_lock(0)
 #define UI_UNLOCK()     lvgl_port_unlock()
-#define IS_ANIMAL       0
+#define IS_ANIMAL       1
 
 /* 全局UI数据管理 */
 /* wifi数据 */
@@ -32,6 +32,7 @@ typedef enum{
     UI_SCREEN_HOME = 0,             /* 主界面 */
     UI_SCREEN_WIFI,                 /* wifi界面 */
     UI_SCREEN_WIFI_CONNECT,         /* wifi连接界面 */
+    UI_SCREEN_BLE,                  /* 蓝牙界面 */
     UI_SCREEN_COUNT,                /* 界面总数 */
 }UiScreenID;
 

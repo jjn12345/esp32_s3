@@ -174,10 +174,10 @@ void view_wifi_show(void) {
 
 void view_wifi_hide(void) {
     // 保持界面对象，仅隐藏
-    UI_LOCK();
-    lv_obj_add_flag(g_wifi_screen,LV_OBJ_FLAG_HIDDEN);
-    lv_obj_clean(g_ap_list);  
-    UI_UNLOCK();
+    // UI_LOCK();
+    // lv_obj_add_flag(g_wifi_screen,LV_OBJ_FLAG_HIDDEN);
+    // lv_obj_clean(g_ap_list);  
+    // UI_UNLOCK();
 }
 const UiScreenOps g_wifi_ops = {
     .create = view_wifi_create,

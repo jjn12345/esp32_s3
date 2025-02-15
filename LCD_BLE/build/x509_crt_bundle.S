@@ -1,4 +1,4 @@
-/* * Data converted from E:/git_store/esp32_szp/LCD_WifiScan/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from E:/git_store/esp32_szp/LCD_BLE/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 .section .rodata.embedded

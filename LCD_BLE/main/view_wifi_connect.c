@@ -131,12 +131,11 @@ void view_wifi_connect_create(event_bus_t* bus){
 void view_wifi_connect_hide(void){
     // 保持界面对象，仅隐藏
     UI_LOCK();
-    lv_obj_add_flag(g_wifi_connect_screen,LV_OBJ_FLAG_HIDDEN);
+    // lv_obj_add_flag(g_wifi_connect_screen,LV_OBJ_FLAG_HIDDEN);
     lv_textarea_set_text(g_ta,"");
     UI_UNLOCK();
 }
 void view_wifi_connect_show(void){
-    // 保持界面对象，仅隐藏
     UI_LOCK();
     lv_obj_remove_flag(g_wifi_connect_screen,LV_OBJ_FLAG_HIDDEN);
     /* 更新ssid */
@@ -145,7 +144,7 @@ void view_wifi_connect_show(void){
     ssid[sizeof(ssid)-1] = '\0';
     lv_label_set_text(g_ssid,ssid);
     #if IS_ANIMAL
-        lv_scr_load_anim(g_wifi_screen, LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
+        lv_scr_load_anim(g_wifi_connect_screen, LV_SCR_LOAD_ANIM_OVER_LEFT, 300, 0, false);
     #else
         lv_scr_load(g_wifi_connect_screen);
     #endif
