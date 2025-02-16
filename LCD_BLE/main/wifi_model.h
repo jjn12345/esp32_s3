@@ -13,22 +13,34 @@
 #include "freertos/semphr.h"
 
 typedef struct{
+    uint8_t ssid[33];
+    int16_t rssi;
+}wifi_info_t;
+typedef struct{
+    wifi_info_t* info;
+    uint16_t ap_nums;
+}scan_info_t;
+typedef struct{
     char selected_ssid[32];  // 当前选中的AP名称
     char password[64];       // 输入的密码
-}wifi_counter;
+}wifi_counter_t;
 typedef struct{
     wifi_init_config_t  wifi_init_cfg;
     wifi_country_t wifi_country_cfg;
 }wifi_cfg_t;
 typedef struct{
-    module_t base;      /* 必须是第一个      */
-    bool is_enable;     /* 是否启动wifi     */
-    bool is_connected;  /* 是否连接         */
-    TaskHandle_t scan_task_handle;      /* 扫描任务句柄 */
-    TaskHandle_t process_task_handle;   /* 总处理任务句柄 */
-    SemaphoreHandle_t   mutex;            /* 互斥信号量 */
-    EventGroupHandle_t  evt_group;        /* 事件标志组 */
-    wifi_cfg_t          wifi_cfg;       /* wifi配置 */
+    module_t base;          /* 必须是第一个      */
+    bool is_enable;         /* 是否启动wifi     */
+    bool is_connected;      /* 是否连接         */
+    bool is_connecting;     /* 是否正在连接     */
+    bool is_reconnect;      /* 是否正在重连标志 */
+    TaskHandle_t scan_task_handle;          /* 扫描任务句柄 */
+    TaskHandle_t process_task_handle;       /* 总处理任务句柄 */
+    TaskHandle_t reconnect_task_handle;     /* 重连任务句柄 */
+    SemaphoreHandle_t   mutex;              /* 互斥信号量 */
+    EventGroupHandle_t  evt_group;          /* 事件标志组 */
+    wifi_cfg_t          wifi_cfg;           /* wifi配置 */
+    wifi_counter_t      now_wifi_counter;    
 }wifi_module_t;
 
 

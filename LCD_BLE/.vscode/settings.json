@@ -69,7 +69,8 @@
     "ui_model.h": "c",
     "app_evt_def.h": "c",
     "format": "c",
-    "semphr.h": "c"
+    "semphr.h": "c",
+    "view_ble.h": "c"
   },
   "idf.openOcdConfigs": [
     "board/esp32s3-bridge.cfg"

@@ -10,12 +10,13 @@ LV_FONT_DECLARE(lv_font_chinese)    /* 声明中文字库 */
 
 /* 全局UI数据管理 */
 /* wifi数据 */
-
+typedef struct {
+    char ssid[32];  // 当前选中的AP名称
+    char password[64];       // 输入的密码        
+}view_wifi_counter_t;
 typedef struct{
-    struct {
-        char selected_ssid[32];  // 当前选中的AP名称
-        char password[64];       // 输入的密码        
-    }wifi_counter_info;
+    view_wifi_counter_t select_wifi_counter;
+    view_wifi_counter_t connect_wifi_counter;
     struct{
         bool wifi_is_enable;
         bool wifi_is_connected;

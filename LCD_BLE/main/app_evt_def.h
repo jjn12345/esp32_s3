@@ -8,6 +8,7 @@ typedef enum{
     WIFI_SCAN_RESULT=0x01,
     WIFI_CONNECT_FAIL=0x02,
     WIFI_CONNECT_SUCCESS=0x04,
+    WIFI_LOST_CONNECT=0x08,
 }wifi_evt_t;
 /* UI事件 */
 typedef enum{

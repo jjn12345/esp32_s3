@@ -76,6 +76,5 @@ void app_main(void)
     module_register(&g_mod_mgr,&wifi_module.base,1000);
     /* *********************************** */
     module_init_all(&g_mod_mgr,1000);                   /* 初始化全部模组 */
-    //xTaskCreate(sys_monitor,"monitor",4096,NULL,1,NULL);
     vTaskDelete(NULL);
 }

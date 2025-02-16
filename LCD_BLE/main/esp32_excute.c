@@ -132,7 +132,7 @@ static esp_err_t bsp_camera_init(void){
 /* lvgl */
 #define LV_LCD_H        LCD_W
 #define LV_LCD_V        LCD_H
-#define LV_BUFF_SIZE    LV_LCD_H * 20 * sizeof(lv_color_t)
+#define LV_BUFF_SIZE    LV_LCD_H * 10 * sizeof(lv_color_t)
 static lv_disp_t * disp_handle;
 static lv_indev_t* touch_handle;
 static esp_lcd_panel_io_handle_t *io_handle = NULL;

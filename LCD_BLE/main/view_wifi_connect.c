@@ -36,8 +36,8 @@ static void connect_res_cb(event_t*e,void*arg) {
 //  连接按钮
 static void connect_btn_cb(lv_event_t *e) {
     event_bus_t* bus = lv_event_get_user_data(e);
-    event_publish(bus,UI_CONNECT_WIFI,&g_ui_data.wifi_data.wifi_counter_info,1000);
-    ESP_LOGI("wifi_connect","SSID:%s\nPWD:%s",g_ui_data.wifi_data.wifi_counter_info.selected_ssid,g_ui_data.wifi_data.wifi_counter_info.password);
+    event_publish(bus,UI_CONNECT_WIFI,&g_ui_data.wifi_data.select_wifi_counter,1000);
+    ESP_LOGI("wifi_connect","SSID:%s\nPWD:%s",g_ui_data.wifi_data.select_wifi_counter.ssid,g_ui_data.wifi_data.select_wifi_counter.password);
     ui_pop();
 }
 
@@ -50,8 +50,8 @@ static void on_ta_focus(lv_event_t *e) {
         g_kb = lv_keyboard_create(lv_layer_top());  // 顶层显示键盘
         lv_keyboard_set_textarea(g_kb, ta);
     } else if (code == LV_EVENT_DEFOCUSED) {
-        strncpy(g_ui_data.wifi_data.wifi_counter_info.password,lv_textarea_get_text(ta),sizeof(g_ui_data.wifi_data.wifi_counter_info.password)-1);
-        g_ui_data.wifi_data.wifi_counter_info.password[sizeof(g_ui_data.wifi_data.wifi_counter_info.password)-1] = '\0';
+        strncpy(g_ui_data.wifi_data.select_wifi_counter.password,lv_textarea_get_text(ta),sizeof(g_ui_data.wifi_data.select_wifi_counter.password)-1);
+        g_ui_data.wifi_data.select_wifi_counter.password[sizeof(g_ui_data.wifi_data.select_wifi_counter.password)-1] = '\0';
         lv_obj_del(g_kb);
         g_kb = NULL;
     }
@@ -69,7 +69,7 @@ void view_wifi_connect_create(event_bus_t* bus){
     lv_obj_set_style_pad_row(g_wifi_connect_screen,0,0);
     /* 创建标题,显示连接的ssid */
     char ssid[33];
-    strncpy(ssid, g_ui_data.wifi_data.wifi_counter_info.selected_ssid, sizeof(ssid)-1);
+    strncpy(ssid, g_ui_data.wifi_data.select_wifi_counter.ssid, sizeof(ssid)-1);
     ssid[sizeof(ssid)-1] = '\0';
     lv_obj_t* label_row = lv_obj_create(g_wifi_connect_screen);
     /* 对标题进行样式设计 */
@@ -140,7 +140,7 @@ void view_wifi_connect_show(void){
     lv_obj_remove_flag(g_wifi_connect_screen,LV_OBJ_FLAG_HIDDEN);
     /* 更新ssid */
     char ssid[33];
-    strncpy(ssid, g_ui_data.wifi_data.wifi_counter_info.selected_ssid, sizeof(ssid)-1);
+    strncpy(ssid, g_ui_data.wifi_data.select_wifi_counter.ssid, sizeof(ssid)-1);
     ssid[sizeof(ssid)-1] = '\0';
     lv_label_set_text(g_ssid,ssid);
     #if IS_ANIMAL

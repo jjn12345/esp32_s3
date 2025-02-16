@@ -5,30 +5,21 @@ typedef enum{
     WIFI_SCAN_DONE = 0x02,
     WIFI_STA_CONNECTED = 0x04,
     WIFI_STA_DISCONNECTED = 0x08,
+    WIFI_EVT_MAX = 0xff, 
 }static_wifi_evt_t;
-#define WIFI_PROCESS_WAIT_BITS  (WIFI_STA_DISCONNECTED | WIFI_STA_CONNECTED | WIFI_START)
+#define WIFI_PROCESS_WAIT_BITS  (WIFI_START | WIFI_STA_CONNECTED | WIFI_STA_DISCONNECTED)
 #define LOCK(mutex,time)        xSemaphoreTake(mutex,time>0?pdMS_TO_TICKS(time):portMAX_DELAY)
 #define UNLOCK(mutex)           xSemaphoreGive(mutex)
 
-typedef struct {
-    char selected_ssid[32];  // 当前选中的AP名称
-    char password[64];       // 输入的密码        
-}wifi_counter_t;
-typedef struct{
-    uint8_t ssid[33];
-    int16_t rssi;
-}wifi_info_t;
-typedef struct{
-    wifi_info_t* info;
-    uint16_t ap_nums;
-}scan_info_t;
+
+
 /* wifi启动扫描 */
 static void start_wifi_scan(wifi_module_t *self) {
     static bool is_set_country = false;
     if(is_set_country == false){
         esp_wifi_set_country(&self->wifi_cfg.wifi_country_cfg);
         is_set_country = true;
-    }
+    }    
     wifi_scan_config_t scan_cfg = {0};
     scan_cfg.scan_type = WIFI_SCAN_TYPE_ACTIVE;
     esp_wifi_scan_start(&scan_cfg, false);
@@ -60,13 +51,15 @@ static void wifi_close(wifi_module_t *self){
 static void wifi_connect(event_t*e,void*arg){
     wifi_module_t* self = (wifi_module_t*)arg;
     LOCK(self->mutex,0);
+    self->is_connecting = 1;
     wifi_counter_t *counter = (wifi_counter_t*)e->data;
+    memcpy(&self->now_wifi_counter,counter,sizeof(wifi_counter_t)); /* 深拷贝 */
+    memset(counter->password,0,sizeof(counter->password));  /* 清除密码 */
     wifi_config_t  wifi_cfg = {0};
-    strcpy((char*)wifi_cfg.sta.ssid,counter->selected_ssid);
-    strcpy((char*)wifi_cfg.sta.password,counter->password);
+    strcpy((char*)wifi_cfg.sta.ssid,(char*)self->now_wifi_counter.selected_ssid);
+    strcpy((char*)wifi_cfg.sta.password,(char*)self->now_wifi_counter.password);
     esp_wifi_set_config(WIFI_IF_STA,&wifi_cfg);
     esp_wifi_connect();
-    memset(counter->password,0,sizeof(counter->password));
     UNLOCK(self->mutex);
 }
 /* wifi控制 */
@@ -93,18 +86,22 @@ static void run_to_wifi_evt(void* event_handler_arg,
     wifi_module_t *mod = (wifi_module_t*)event_handler_arg;
     switch(event_id){
         case WIFI_EVENT_SCAN_DONE:{
+            ESP_LOGI("wifi","WIFI_SCAN_DONE");
             xEventGroupSetBits(mod->evt_group,WIFI_SCAN_DONE);
         }
         break;
         case WIFI_EVENT_STA_START:{
+            ESP_LOGI("wifi","WIFI_START");
             xEventGroupSetBits(mod->evt_group,WIFI_START); 
         }
         break;
         case WIFI_EVENT_STA_DISCONNECTED:{
+            ESP_LOGI("wifi","WIFI_STA_DISCONNECTED");
             xEventGroupSetBits(mod->evt_group,WIFI_STA_DISCONNECTED); 
         }
         break;
         case WIFI_EVENT_STA_CONNECTED:{
+            ESP_LOGI("wifi","WIFI_STA_CONNECTED");
             xEventGroupSetBits(mod->evt_group,WIFI_STA_CONNECTED); 
         }
         break;
@@ -123,7 +120,7 @@ static void wifi_scan_task(void*arg){
         ESP_LOGI("wifi","wifi_scan_task is running");
         LOCK(self->mutex,0);
         start_wifi_scan(self);
-        bit = xEventGroupWaitBits(self->evt_group,WIFI_SCAN_DONE,true,false,pdMS_TO_TICKS(8000));
+        bit = xEventGroupWaitBits(self->evt_group,WIFI_SCAN_DONE,true,false,pdMS_TO_TICKS(3000));
         if(bit == WIFI_SCAN_DONE){
             /* 清空数据 */
             if(scan_info->info != NULL){
@@ -148,43 +145,91 @@ static void wifi_scan_task(void*arg){
             /* 把数据发布出去 */
             event_publish(self->base.bus,WIFI_SCAN_RESULT,scan_info,1000);
             /* 清除临时数据 */
-            if(ap_records)free(ap_records);
-            
-        }   
+            if(ap_records)free(ap_records);    
+        }
         UNLOCK(self->mutex);
+        vTaskDelay(pdMS_TO_TICKS(5000));
     }
 }
 
-
+/* wifi重连任务 */
+static void wifi_reconnect_task(void*arg){
+    uint32_t max_reconnect_nums = 3;            /* 最大重连次数 */
+    wifi_module_t* self = (wifi_module_t*)arg;
+    bool enable = 0;
+    bool is_reconnect = 0;
+    while(1){
+        vTaskDelay(pdMS_TO_TICKS(5000));
+        ESP_LOGI("wifi","wifi_reconnect_task is running");
+        max_reconnect_nums--;
+        LOCK(self->mutex,0);
+        enable = self->is_reconnect;
+        is_reconnect = self->is_reconnect;
+        UNLOCK(self->mutex);
+        if(!enable || !max_reconnect_nums||!is_reconnect){
+            if(enable){
+                vTaskResume(self->scan_task_handle);
+            }
+            vTaskDelete(NULL);
+            return;
+        }
+        esp_wifi_connect();
+        self->is_connecting = 1;
+    }
+}   
 /* wifi处理任务 */
 static void wifi_process(void*arg){
     EventBits_t bits = 0;
     wifi_module_t *mod = (wifi_module_t*)arg;
     for(;;){
         bits =  xEventGroupWaitBits(mod->evt_group,WIFI_PROCESS_WAIT_BITS,true,false,portMAX_DELAY);
-        LOCK(mod->mutex,0);
-        switch(bits & WIFI_PROCESS_WAIT_BITS){
+        switch(bits & WIFI_EVT_MAX){
             case WIFI_START:{
+                ESP_LOGI("wifi_process","WIFI_START");
                 if(mod->scan_task_handle){
                     vTaskResume(mod->scan_task_handle);
                 }
                 else{
-                    xTaskCreate(wifi_scan_task,"scan_task",4096,mod,3,&mod->scan_task_handle);
+                    xTaskCreate(wifi_scan_task,"scan_task",6144,mod,3,&mod->scan_task_handle);
                 }
             }
             break;
             case WIFI_STA_CONNECTED:{
+                ESP_LOGI("wifi_process","WIFI_STA_CONNECTED");
                 mod->is_connected = 1;
-                event_publish(mod->base.bus,WIFI_CONNECT_SUCCESS,NULL,1000);
+                mod->is_connecting = 0;
+                if(mod->is_reconnect)mod->is_reconnect = 0;
+                event_publish(mod->base.bus,WIFI_CONNECT_SUCCESS,&mod->now_wifi_counter,1000);
+                ESP_LOGI("wifi_process","WIFI_STA_CONNECTED finish");
             }
             break;
             case WIFI_STA_DISCONNECTED:{
-                mod->is_connected = 0;
-                event_publish(mod->base.bus,WIFI_CONNECT_FAIL,NULL,1000);
+                ESP_LOGI("wifi_process","WIFI_STA_DISCONNECTED");
+                if(mod->is_connecting){
+                    if(mod->is_reconnect){
+
+                    }
+                    else{
+                        event_publish(mod->base.bus,WIFI_CONNECT_FAIL,NULL,1000);
+                    }
+                    mod->is_connecting = 0;
+                }
+                else{
+                    if(mod->is_enable){
+                        LOCK(mod->mutex,0);
+                        vTaskSuspend(mod->scan_task_handle);
+                        xTaskCreate(wifi_reconnect_task,"wifi reconnect",6144,mod,6,&mod->reconnect_task_handle);
+                        mod->is_reconnect = 1;  /* 重连标志置一 */
+                        event_publish(mod->base.bus,WIFI_LOST_CONNECT,NULL,1000);
+                        UNLOCK(mod->mutex);
+                    }
+                    else{
+                        mod->is_reconnect = 0;
+                    }
+                }
             }
             break;
         }
-        UNLOCK(mod->mutex);
     }
 }
 
@@ -195,12 +240,14 @@ static void wifi_init(module_t *self){
     /* 创建互斥信号量 */
     mod->mutex = xSemaphoreCreateMutex();
     if(NULL == mod->mutex){
+        ESP_LOGE("wifi","1");
         self->state = MODULE_STATE_ERROR;
         return;
     }
     /* 创建事件标志组 */
     mod->evt_group = xEventGroupCreate();
     if(NULL == mod->evt_group){
+        ESP_LOGE("wifi","2");
         vSemaphoreDelete(mod->mutex);
         self->state = MODULE_STATE_ERROR;
         return;
@@ -209,6 +256,7 @@ static void wifi_init(module_t *self){
     /* 初始化lwif */
     ret = esp_netif_init();
     if(ESP_OK != ret){
+        ESP_LOGE("wifi","3");
         vSemaphoreDelete(mod->mutex);
         vEventGroupDelete(mod->evt_group);
         self->state = MODULE_STATE_ERROR;
@@ -217,6 +265,7 @@ static void wifi_init(module_t *self){
     /* 创建默认事件循环 */
     ret = esp_event_loop_create_default();
     if(ESP_OK != ret){
+        ESP_LOGE("wifi","4");
         vSemaphoreDelete(mod->mutex);
         vEventGroupDelete(mod->evt_group);
         esp_netif_deinit();
@@ -237,24 +286,21 @@ static void wifi_init(module_t *self){
         .schan = 1,
         .policy = WIFI_COUNTRY_POLICY_AUTO,
     };
-    /* 创建wifi处理函数 */
-    ret = xTaskCreate(wifi_process,"wifi process",4096,mod,4,&mod->process_task_handle);
-    if(pdPASS!=ret){
-        vSemaphoreDelete(mod->mutex);
-        vEventGroupDelete(mod->evt_group);
-        esp_wifi_deinit();
-        esp_netif_deinit();
-        esp_event_loop_delete_default();
-        self->state = MODULE_STATE_ERROR;
-        return;
-    }
     /* 订阅事件 */
     ret = event_subscribe(self->bus,UI_ENABLE_WIFI|UI_CLOSE_WIFI,wifi_ctrl,mod,1000);
     if(ret == false){
+        ESP_LOGE("wifi","5");
         goto err;
     }
     ret = event_subscribe(self->bus,UI_CONNECT_WIFI,wifi_connect,mod,1000);
     if(ret == false){
+        ESP_LOGE("wifi","6");
+        goto err;
+    }
+    /* 创建wifi处理函数 */
+    ret = xTaskCreate(wifi_process,"wifi process",6144,mod,5,&mod->process_task_handle);
+    if(pdPASS!=ret){
+        ESP_LOGE("wifi","7");
         goto err;
     }
     return;

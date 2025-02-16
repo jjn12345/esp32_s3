@@ -35,9 +35,9 @@ static void on_wifi_switch(lv_event_t *e) {
         lv_obj_t* label2 = lv_obj_get_child(g_wifi_state_block,0);
         lv_label_set_text_fmt(label2,LV_SYMBOL_WIFI);
         lv_label_set_text_fmt(label,"未连接");
-        event_publish(bus,UI_CLOSE_WIFI,NULL,1000);
         g_ui_data.wifi_data.flag.wifi_is_connected = 0;
         lv_obj_clean(g_ap_list);
+        event_publish(bus,UI_CLOSE_WIFI,NULL,1000);
     }
     last_switch_time = xTaskGetTickCount();
     UI_UNLOCK();
@@ -48,8 +48,8 @@ static void on_ap_click(lv_event_t *e) {
     event_bus_t* bus = (event_bus_t*)lv_event_get_user_data(e);
     lv_obj_t *btn = lv_event_get_target(e);
     const char *ssid = lv_list_get_btn_text(g_ap_list, btn);
-    strncpy(g_ui_data.wifi_data.wifi_counter_info.selected_ssid, ssid, sizeof(g_ui_data.wifi_data.wifi_counter_info.selected_ssid)-1);
-    g_ui_data.wifi_data.wifi_counter_info.selected_ssid[sizeof(g_ui_data.wifi_data.wifi_counter_info.selected_ssid)-1] = '\0';
+    strncpy(g_ui_data.wifi_data.select_wifi_counter.ssid, ssid, sizeof(g_ui_data.wifi_data.select_wifi_counter.ssid)-1);
+    g_ui_data.wifi_data.select_wifi_counter.ssid[sizeof(g_ui_data.wifi_data.select_wifi_counter.ssid)-1] = '\0';
     ui_push(UI_SCREEN_WIFI_CONNECT);  // 进入连接界面
 }
 //  更新AP列表事件
@@ -62,16 +62,16 @@ typedef struct{
     uint16_t ap_nums;
 }scan_info_t;
 static  void on_ap_updata(event_t *e,void*arg){
-    event_t* bus = (event_bus_t*)arg;
+    event_bus_t* bus = (event_bus_t*)arg;
     /* 获取系统总线传递过来的数据 */
-    scan_info_t * scan_info;
-    scan_info = (scan_info_t*)e->data;
     UI_LOCK();    
     switch(e->type){
         case WIFI_CONNECT_SUCCESS:{
+            view_wifi_counter_t* counter = (view_wifi_counter_t*)e->data;
+            memcpy(&g_ui_data.wifi_data.connect_wifi_counter,counter,sizeof(view_wifi_counter_t));
             lv_obj_clean(g_ap_list);
             char ssid[32];
-            strcpy(ssid,g_ui_data.wifi_data.wifi_counter_info.selected_ssid);
+            strcpy(ssid,counter->ssid);
             lv_obj_t* label = lv_obj_get_child(g_wifi_state_block,1);
             lv_obj_t* label2 = lv_obj_get_child(g_wifi_state_block,0);
             lv_label_set_text_fmt(label2,LV_SYMBOL_WIFI "连接成功");
@@ -79,15 +79,27 @@ static  void on_ap_updata(event_t *e,void*arg){
         }
         break;
         case WIFI_CONNECT_FAIL:{
-
+            memset(&g_ui_data.wifi_data.select_wifi_counter,0,sizeof(view_wifi_counter_t));
+        }
+        break;
+        case WIFI_LOST_CONNECT:{
+            lv_obj_t* label = lv_obj_get_child(g_wifi_state_block,1);
+            lv_obj_t* label2 = lv_obj_get_child(g_wifi_state_block,0);
+            lv_label_set_text_fmt(label2,LV_SYMBOL_WIFI);
+            lv_label_set_text_fmt(label,"未连接");
+            g_ui_data.wifi_data.flag.wifi_is_connected = 0;
+            memset(g_ui_data.wifi_data.select_wifi_counter.ssid,0,sizeof(g_ui_data.wifi_data.select_wifi_counter.ssid));
+            lv_obj_clean(g_ap_list);
         }
         break;
         case WIFI_SCAN_RESULT:{
+            scan_info_t * scan_info;
+            scan_info = (scan_info_t*)e->data;
             /* 清除原本的AP列表的内容 */
             lv_obj_clean(g_ap_list);   
             for (int i = 0; i < scan_info->ap_nums; i++) {
                 if(g_ui_data.wifi_data.flag.wifi_is_connected){
-                    if(!strcmp((char*)scan_info->info[i].ssid,g_ui_data.wifi_data.wifi_counter_info.selected_ssid)){
+                    if(!strcmp((char*)scan_info->info[i].ssid,g_ui_data.wifi_data.connect_wifi_counter.ssid)){
                         continue;
                     }
                 }
@@ -154,7 +166,7 @@ void view_wifi_create(event_bus_t* bus) {
     lv_obj_set_hidden(g_ap_list, true);
     UI_UNLOCK();
     /* 订阅wifi扫描完成事件 */
-    event_subscribe(bus,WIFI_SCAN_RESULT|WIFI_CONNECT_SUCCESS|WIFI_CONNECT_FAIL,on_ap_updata,bus,1000);
+    event_subscribe(bus,WIFI_SCAN_RESULT|WIFI_CONNECT_SUCCESS|WIFI_CONNECT_FAIL|WIFI_LOST_CONNECT,on_ap_updata,bus,1000);
 }
 
 void view_wifi_show(void) {
@@ -174,10 +186,10 @@ void view_wifi_show(void) {
 
 void view_wifi_hide(void) {
     // 保持界面对象，仅隐藏
-    // UI_LOCK();
-    // lv_obj_add_flag(g_wifi_screen,LV_OBJ_FLAG_HIDDEN);
-    // lv_obj_clean(g_ap_list);  
-    // UI_UNLOCK();
+    UI_LOCK();
+    //lv_obj_add_flag(g_wifi_screen,LV_OBJ_FLAG_HIDDEN);
+    lv_obj_clean(g_ap_list);  
+    UI_UNLOCK();
 }
 const UiScreenOps g_wifi_ops = {
     .create = view_wifi_create,
